@@ -9,6 +9,8 @@ use PayPal\Api\Item;
 use PayPal\Api\ItemList;
 use PayPal\Api\Details;
 use PayPal\Api\Amount;
+use PayPal\Api\Transaction;
+use PayPal\Api\RedirectUrls;
 
 
 require 'config.php';
@@ -28,9 +30,9 @@ $articulo->setName($producto)
          ->setQuantity(1)
          ->setPrice($precio);
 
-echo $articulo->getQuantity();
-echo $articulo->getName();
-echo $articulo->getPrice();
+//echo $articulo->getQuantity();
+//echo $articulo->getName();
+//echo $articulo->getPrice();
 
 $listaArticulos = new ItemList();
 $listaArticulos->setItems(array($articulo));
@@ -44,3 +46,14 @@ $cantidad->setCurrency('USD')
          ->setTotal($precio)
          ->setDetails($detalles);
 
+$transaccion = new Transaction();
+$transaccion->setAmount($cantidad)
+            ->setItemList($listaArticulos)
+            ->setDescription('Pago ')
+            ->setInvoiceNumber(uniqid());
+
+$redireccionar = new RedirectUrls();
+$redireccionar->setReturnUrl(URL_SITIO."/pago_finalizado.php?exito=true")
+              ->setCancelUrl(URL_SITIO."/pago_finalizado.php?exito=false");
+
+echo $redireccionar->getReturnUrl();
