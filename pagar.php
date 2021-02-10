@@ -6,6 +6,10 @@ if(!isset($_POST['producto'], $_POST['precio'])){
 
 use PayPal\Api\Payer;
 use PayPal\Api\Item;
+use PayPal\Api\ItemList;
+use PayPal\Api\Details;
+use PayPal\Api\Amount;
+
 
 require 'config.php';
 $producto = htmlspecialchars($_POST['producto']);
@@ -27,3 +31,16 @@ $articulo->setName($producto)
 echo $articulo->getQuantity();
 echo $articulo->getName();
 echo $articulo->getPrice();
+
+$listaArticulos = new ItemList();
+$listaArticulos->setItems(array($articulo));
+
+$detalles = new Details();
+$detalles->setShipping($envio)
+         ->setSubTotal($precio);
+
+$cantidad = new Amount();
+$cantidad->setCurrency('USD')
+         ->setTotal($precio)
+         ->setDetails($detalles);
+
