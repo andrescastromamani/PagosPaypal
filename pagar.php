@@ -11,6 +11,8 @@ use PayPal\Api\Details;
 use PayPal\Api\Amount;
 use PayPal\Api\Transaction;
 use PayPal\Api\RedirectUrls;
+use PayPal\Api\Payment;
+
 
 
 require 'config.php';
@@ -18,7 +20,7 @@ $producto = htmlspecialchars($_POST['producto']);
 $precio = htmlspecialchars($_POST['precio']);
 $precio = (int)$precio;
 //var_dump($precio);
-$envio = 0;
+$envio = 3;
 $total = $precio + $envio;
 
 $compra = new Payer();
@@ -43,7 +45,7 @@ $detalles->setShipping($envio)
 
 $cantidad = new Amount();
 $cantidad->setCurrency('USD')
-         ->setTotal($precio)
+         ->setTotal($total)
          ->setDetails($detalles);
 
 $transaccion = new Transaction();
@@ -56,4 +58,22 @@ $redireccionar = new RedirectUrls();
 $redireccionar->setReturnUrl(URL_SITIO."/pago_finalizado.php?exito=true")
               ->setCancelUrl(URL_SITIO."/pago_finalizado.php?exito=false");
 
-echo $redireccionar->getReturnUrl();
+//echo $redireccionar->getReturnUrl();
+
+$pago = new Payment();
+$pago->setIntent("sale")
+     ->setPayer($compra)
+     ->setRedirectUrls($redireccionar)
+     ->setTransactions(array($transaccion));
+
+try {
+    $pago->create($apiContext);
+} catch (PayPal\Exception\PayPalConnectionException $pce) {
+    echo "<pre>";
+        print_r(json_decode($pce->getData()));
+        exit;
+    echo "</pre>";
+}
+
+$aprobado = $pago->getApprovalLink();
+header("Location: {$aprobado}");
